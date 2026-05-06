@@ -1,4 +1,4 @@
-#![allow(dead_code, unused_parens, unused_variables, non_snake_case)]
+//#![allow(dead_code, unused_parens, unused_variables, non_snake_case)]
 
 use quote::quote;
 use syn::{FnArg, Pat, Token, parenthesized, parse::Parse, parse_macro_input};
@@ -71,7 +71,7 @@ impl Parse for AnnotatedFunction {
         input.parse::<syn::Generics>()?;
 
         let content;
-        let paren = parenthesized!(content in input);
+        let _= parenthesized!(content in input);
         let mut params = Vec::new();
         // TODO clean up
         if let Ok(start) = syn::FnArg::parse(&content) {

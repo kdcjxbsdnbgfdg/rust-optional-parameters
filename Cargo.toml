@@ -2,6 +2,9 @@
 name = "optional_params"
 version = "0.1.0"
 edition = "2024"
+license-file = "license"
+description = "adds optional parameters to rust functions using macros"
+repository = "https://github.com/kdcjxbsdnbgfdg/rust-optional-parameters"
 
 [lib]
 proc-macro = true
