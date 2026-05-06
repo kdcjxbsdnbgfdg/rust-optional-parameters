@@ -147,7 +147,6 @@ fn tokens(
         }
     });
     // TODO how do i get rid of this clone
-    let defaultValues2 = defaultValues.clone();
     let name = &annotatedFunction.0.0;
     stream.extend(quote! {
         macro_rules! #name {
@@ -167,7 +166,22 @@ fn tokens(
         }
     });
 }
+// RUST SHUT THE FUCK UP!!! ITS NOT A TEST ITS FOR PEOPLE TO READ
+// TO KNOW HOW IT WORKS
 
+/// Allows you to create a function with optional parameters
+/// annotate a function with 
+/// ``` no_run
+/// #[default_params(param = value, param = value)]
+/// ```
+/// to create a macro of the same name
+/// the macro will take all of the required parameters (if any)
+/// at the start, then you write 
+/// ``` ignore
+/// func!(.param = value);
+/// ```
+/// Note: the . is necessary
+/// Note: rust will complain about unsued code, thats intentional (hard to fix)
 #[proc_macro_attribute]
 pub fn default_params(
     input: proc_macro::TokenStream,
