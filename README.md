@@ -23,7 +23,7 @@ This means that the macro will have to generate n! macro branches for a function
 I hope I dont have to explain why you dont want O(n!) compile time in your projects, for example 8 factorial is 40,320.<br/>
 <br/>
 My version avoids this problem by initialising variables, and then overriding them with the macro input.<br/>
-The downside to this approach is that the compiler will give you a lot of warnings, these warnings are seemingly impossible to avoid using my approach.<br/>
-My version also depends on a bit of trickery to bypass rusts macro hygiene (why doesnt rust have a way to turn off macro hygiene??).
+The downside to this approach is that for now im using a trick to bypass macro hygiene (why doesnt rust have a way to turn off macro hygiene??).
+I am later going to try to change this.
 <br/>
 My version does not YET allow you to rename the output macro.<br/>
