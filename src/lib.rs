@@ -1,5 +1,6 @@
 //#![allow(dead_code, unused_parens, unused_variables, non_snake_case)]
-#![allow(unused_parens, non_snake_case, unused_variables, unused)]
+//#![allow(unused_parens, non_snake_case, unused_variables, unused)]
+#![allow(non_snake_case)]
 
 use quote::quote;
 use syn::{FnArg, Pat, Token, parenthesized, parse::Parse, parse_macro_input};
@@ -120,12 +121,8 @@ fn tokens(
             #value
         }
     });
-    // CORRECT
-    //println!("{}", defaultParams.0.len());
-    // CORRECT
-    //println!("{}", annotatedFunction.1.0.len());
 
-    let requiredParamsLen = annotatedFunction.1.0.len() - defaultParams.0.len();
+    //let requiredParamsLen = annotatedFunction.1.0.len() - defaultParams.0.len();
     let optionalParamsLen = defaultParams.0.len();
     let paramsLen = annotatedFunction.1.0.len();
     // change the name to something better
@@ -134,17 +131,18 @@ fn tokens(
         .0
         .get(paramsLen - optionalParamsLen..paramsLen)
         .unwrap();
-    // good
-    //println!("x len = {}", x.len());
+
     let initialisations = optionalParameters.iter().map(|x| {
         let paramType = &x.1;
         let paramName = &x.0;
+        let paramName = &quote::format_ident!("_{}", paramName);
         quote! {
             let mut #paramName: #paramType;
         }
     });
     let values = defaultParams.0.iter().map(|x| {
         let paramName = &x.name;
+        let paramName = &quote::format_ident!("_{}", paramName);
         let paramValue = &x.value;
         quote! {
             #paramName = #paramValue;
@@ -152,10 +150,12 @@ fn tokens(
     });
     let optionalParamNames = optionalParameters.iter().map(|x| {
         let paramName = &x.0;
+        let paramName = &quote::format_ident!("_{}", paramName);
         quote! {
             #paramName
         }
     });
+    // i think i could just do something like implementing to tokens instead of this
     let initialisations2 = initialisations.clone();
     let values2= values.clone();
     let optionalParamNames2 = optionalParamNames.clone();
@@ -166,9 +166,9 @@ fn tokens(
     let name = &annotatedFunction.0.0;
     stream.extend(quote! {
         macro_rules! #name {
-            // OKAY!!
             () => {
                 (|| {
+                    // does this even need to be unhygeinic??
                     optional_params::unhygienic! {
                     #(#initialisations3)*
                     #(#values3)*
@@ -179,10 +179,14 @@ fn tokens(
             ( $(.$paramName:ident = $paramValue:expr),* ) => {
                 (|| {
                     optional_params::unhygienic! {
+                    paste::paste! {
                     #(#initialisations2)*
                     #(#values2)*
-                    $($paramName = $paramValue;)*
+                    //$(_$paramName = $paramValue;)*
+                    //$( underscore!{$paramName} = $paramValue;)*
+                    $( [<_ $paramName>] = $paramValue;)*
                     #name( #(#optionalParamNames2),*)
+                    }
                     }
                 })()
             };
@@ -192,11 +196,14 @@ fn tokens(
             ($($arg:expr),* , $(.$paramName:ident = $paramValue:expr),* ) => {
                 (|| {
                     optional_params::unhygienic! {
+                    paste::paste! {
                     #(#initialisations)*
                     #(#values)*
-                    $($paramName = $paramValue;)*
+                    //$(_$paramName = $paramValue;)*
+                    $( [<_ $paramName>] = $paramValue;)*
                     #name($($arg),* , #(#optionalParamNames),*)
                     }
+                }
                 })()
             };
         }
@@ -232,7 +239,15 @@ pub fn default_params(
     return x.into();
 }
 
+// maybe i can use set_span to change the hygiene of my proc macro variables?
 #[proc_macro]
 pub fn unhygienic(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     tokens.to_string().parse().unwrap()
 }
+
+//#[proc_macro]
+//pub fn underscore(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+//    let x: proc_macro::TokenStream = (String::from("_") + &tokens.to_string()).parse().unwrap();
+//    return x;
+//    //println!("{}", x.)
+//}

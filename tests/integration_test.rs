@@ -1,5 +1,4 @@
-#![allow(unused_parens, non_snake_case, unused_variables, unused)]
-// -- --nocapture for print
+#![allow(non_snake_case)]
 
 use optional_params::default_params;
 
@@ -22,7 +21,6 @@ fn div(lhs: f32, rhs: f32) -> f32 {
 fn threeParams(a: i32, b: i32, c: i32) -> i32 {
     return (a + b) - c;
 }
-
 
 #[test]
 fn testAdd() {
@@ -50,6 +48,18 @@ fn testOverrideParams() {
 
 #[test]
 fn testThreeParams() {
-    assert_eq!(threeParams(1, 2, 3), threeParams!(1, .b = 2, .c = 3));
-    assert_eq!(threeParams(1, 2, 3), threeParams!(1, .c = 3, .b = 2));
+    assert_eq!(threeParams(1,  2, 3), threeParams!(1, .b =  2, .c =  3));
+    assert_eq!(threeParams(1,  2, 3), threeParams!(1, .c =  3, .b =  2));
+    assert_eq!(threeParams(1, -2, 4), threeParams!(1, .b = -2, .c =  4));
+    assert_eq!(threeParams(1, -2, 4), threeParams!(1, .c =  4, .b = -2));
 }
+
+//#[test]
+//fn testExpr() {
+//    // fixing the warnings ends up breaking this "feature"
+//    // but tbh, it doesnt really matter that much
+//    // a simple function call should not be this complicated
+//
+//    //assert_eq!(threeParams(1, 4, 16), threeParams!(1, .b = 4, .c = b * b));
+//    //assert_eq!(threeParams(1, -2, 4), threeParams!(1, .c = b * b));
+//}
