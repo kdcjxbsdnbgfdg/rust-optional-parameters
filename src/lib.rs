@@ -1,4 +1,5 @@
 //#![allow(dead_code, unused_parens, unused_variables, non_snake_case)]
+#![allow(unused_parens, non_snake_case, unused_variables, unused)]
 
 use quote::quote;
 use syn::{FnArg, Pat, Token, parenthesized, parse::Parse, parse_macro_input};
@@ -119,14 +120,23 @@ fn tokens(
             #value
         }
     });
-    let difference = annotatedFunction.1.0.len() - defaultParams.0.len();
+    // CORRECT
+    //println!("{}", defaultParams.0.len());
+    // CORRECT
+    //println!("{}", annotatedFunction.1.0.len());
+
+    let requiredParamsLen = annotatedFunction.1.0.len() - defaultParams.0.len();
+    let optionalParamsLen = defaultParams.0.len();
     let paramsLen = annotatedFunction.1.0.len();
-    let x = annotatedFunction
+    // change the name to something better
+    let optionalParameters = annotatedFunction
         .1
         .0
-        .get(paramsLen - difference..paramsLen)
+        .get(paramsLen - optionalParamsLen..paramsLen)
         .unwrap();
-    let initialisations = x.iter().map(|x| {
+    // good
+    //println!("x len = {}", x.len());
+    let initialisations = optionalParameters.iter().map(|x| {
         let paramType = &x.1;
         let paramName = &x.0;
         quote! {
@@ -140,16 +150,42 @@ fn tokens(
             #paramName = #paramValue;
         }
     });
-    let optionalParamNames = x.iter().map(|x| {
+    let optionalParamNames = optionalParameters.iter().map(|x| {
         let paramName = &x.0;
         quote! {
             #paramName
         }
     });
+    let initialisations2 = initialisations.clone();
+    let values2= values.clone();
+    let optionalParamNames2 = optionalParamNames.clone();
+    let initialisations3 = initialisations.clone();
+    let values3= values.clone();
+    let optionalParamNames3 = optionalParamNames.clone();
     // TODO how do i get rid of this clone
     let name = &annotatedFunction.0.0;
     stream.extend(quote! {
         macro_rules! #name {
+            // OKAY!!
+            () => {
+                (|| {
+                    optional_params::unhygienic! {
+                    #(#initialisations3)*
+                    #(#values3)*
+                    #name( #(#optionalParamNames3),*)
+                    }
+                })()
+            };
+            ( $(.$paramName:ident = $paramValue:expr),* ) => {
+                (|| {
+                    optional_params::unhygienic! {
+                    #(#initialisations2)*
+                    #(#values2)*
+                    $($paramName = $paramValue;)*
+                    #name( #(#optionalParamNames2),*)
+                    }
+                })()
+            };
             ($($arg:expr),* $(,)?) => {
                 #name($($arg),* , #(#defaultValues),*)
             };
