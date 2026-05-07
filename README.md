@@ -14,3 +14,16 @@ fn testFunction(lhs: u32, rhs: u32) {
 testFunction!(10) // returns 10 + 10 (which is 20)
 testFunction!(10, .rhs = 20) // returns 10 + 20 (which is 30)
 ```
+
+I found out, only after publishing this, that someone else did the exact same thing as me already. <br/>
+Their solution is almost identical to mine, using a proc macro to generate a regular macro. <br/>
+However, theirs has a bit of a major problem, you can only write the optional arguments in the same order as theyre declared. <br/>
+If you want to bypass this, they allow you to use a shuffle attribute, however enabling this option generates 1 macro branch for each possible ordering.<br>
+This means that the macro will have to generate n! macro branches for a function with n optional arguments.<br>
+I hope I dont have to explain why you dont want O(n!) compile time in your projects, for example 8 factorial is 40,320.<br/>
+<br/>
+My version avoids this problem by initialising variables, and then overriding them with the macro input.<br/>
+The downside to this approach is that the compiler will give you a lot of warnings, these warnings are seemingly impossible to avoid using my approach.<br/>
+My version also depends on a bit of trickery to bypass rusts macro hygiene (why doesnt rust have a way to turn off macro hygiene??).
+<br/>
+My version does not YET allow you to rename the output macro.<br/>
