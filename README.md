@@ -7,7 +7,7 @@ I made this because I wanted to make a cool project. <br/>
 ### Example Code
 ```rust
 #[default_params(rhs = 10)]
-fn testFunction(arg1: u32, arg2: &str) {
+fn testFunction(lhs: u32, rhs: u32) {
   return lhs + rhs;
 }
 
